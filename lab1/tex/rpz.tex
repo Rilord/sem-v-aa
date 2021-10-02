@@ -1,0 +1,64 @@
+%% Преамбула TeX-файла
+
+% 1. Стиль и язык
+\documentclass[utf8x, 14pt]{G7-32} % Стиль (по умолчанию будет 14pt)
+\include{preamble.inc}
+
+% Настройки листингов.
+\include{listings.inc}
+
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{tabularx} % in the preamble
+\usepackage[normalem]{ulem}
+
+% Полезные макросы листингов.
+\include{macros.inc}
+
+
+% Стиль титульного листа и заголовки
+
+
+\begin{document}
+
+\include{00-title}
+
+\frontmatter % выключает нумерацию ВСЕГО; здесь начинаются ненумерованные главы: реферат, введение, глоссарий, сокращения и прочее.
+
+
+
+%\listoffigures                         % Список рисунков
+
+%\listoftables                          % Список таблиц
+
+%\NormRefs % Нормативные ссылки 
+% Команды \breakingbeforechapters и \nonbreakingbeforechapters
+% управляют разрывом страницы перед главами.
+% По-умолчанию страница разрывается.
+
+% \nobreakingbeforechapters
+% \breakingbeforechapters
+
+
+\mainmatter % это включает нумерацию глав и секций в документе ниже
+
+\include{01-toc}
+\include{12-intro}
+\include{20-analysis}
+\include{30-design}
+\include{40-impl}
+\include{50-research}
+
+            
+\include{80-conclusion}%% заключение
+
+
+\include{81-biblio}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
