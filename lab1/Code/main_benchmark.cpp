@@ -2,45 +2,72 @@
 // Created by kodor on 10/13/21.
 //
 
-#include "levenstein.h"
-#include <benchmark/benchmark.h>
+//#include "levenstein.h"
 
 #include <iostream>
 #include <chrono>
 #include <string>
-
+#include "levenstein.h"
 
 static char **test_strings;
 
 static int32_t **dp;
 
+static void print_helper() {
+    printf("commands:\n"
+           "arg 1 - first string, "
+           "arg 2 - second string, "
+           "arg 3 - edit distance algorithm\n"
+           "algorithms:\n"
+           "-r recursive\n"
+           "-i iterative\n"
+           "-c cached\n"
+           "-d damerau-levenshtein\n");
+}
 
-void create_test_strings() {
-    test_strings = (char **) malloc(sizeof(char *) * 200);
-    for (auto i = 0; i < 200; i++) {
-        test_strings[i] = (char *) calloc(200, sizeof(char));
-        auto tmp = std::string(i, '*');
-        strcpy(test_strings[i], tmp.c_str());
+
+static void process_input(int argc, const char *argv[]) {
+    if (argc < 2)
+        print_helper();
+
+    if (strcmp(argv[3], "-r") == 0)
+    {
+        int distance = edit_distance(argv[2],
+                                   strlen(argv[2]),
+                                   argv[3],
+                                   strlen(argv[3]));
+
+        printf("result (with recursion): %d\n", distance);
+    }
+    else if(strcmp(argv[3], "-i") == 0) {
+
+        auto res = iterative_levenshtein(argv[2],
+                                            strlen(argv[2]),
+                                            argv[3],
+                                            strlen(argv[3]));
+
+        printf("result (with iterative approach): %d\n", res->distance);
+        print_matrix(res->mat);
+
+    }
+    else if(strcmp(argv[3], "-c") == 0) {
+
+        int distance = cached_edit_distance(argv[2],
+                                     strlen(argv[2]),
+                                     argv[3],
+                                     strlen(argv[3]));
+
+        printf("result (with caching): %d\n", distance);
+    }
+    else if(strcmp(argv[3], "-d") == 0) {
     }
 
 }
 
-
-
-static void init_dp() {
-
-    dp = (int32_t **) malloc(10 * sizeof(int32_t *));
-    for (auto i = 0 ; i < 10; i++) {
-        dp[i] = (int32_t *) calloc(10, sizeof(int32_t));
-    }
-}
 
 int main(const int argc, const char *argv[]) {
-    init_dp();
 
-    create_test_strings();
-
-
+    process_input(argc, argv);
 
     return 0;
 }

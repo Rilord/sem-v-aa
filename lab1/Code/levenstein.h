@@ -16,15 +16,15 @@ typedef struct {
 } result;
 
 
-int edit_distance(char *s, uint32_t ls, char *t, uint32_t lt);
+int edit_distance(const char *s, int ls, const char *t, int lt);
 
-int memoized_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt, int32_t **dp);
+int memoized_edit_distance(const char *s, int ls, const char *t, int lt, int32_t **dp);
 
-result *iterative_levenshtein(char *s, uint32_t ls, char *t, uint32_t lt);
+result *iterative_levenshtein(const char *s, int ls, const char *t, int lt);
 
-int damerau_levenstein(char *s, uint32_t ls, char *t, uint32_t lt);
+int damerau_levenstein(const char *s, int ls, const char *t, int lt);
 
 
-int cached_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt);
+int cached_edit_distance(const char *s, int ls, const char *t, int lt);
 
 #endif //CODE_LEVENSTEIN_H

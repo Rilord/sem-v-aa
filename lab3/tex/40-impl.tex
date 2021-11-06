@@ -1,0 +1,188 @@
+\chapter{Технологический раздел}
+\label{cha:impl}
+
+
+\section{Средства реализации}
+Основным средством реализации в данной лабораторной работе является язык программирования C++17 \cite{iso_2017} ввиду своей высокой скорости работы и большого инструментария библиотек для анализирования программного обеспечения. Программное обеспечение было реализована при помощи структурного программирования.
+
+\section{Требования к программному обеспечению}
+Входнымы данными являются:
+\begin{itemize}
+    \item размерность массива $\text{size}$;
+    \item $\text{size}$ однотипных элементов массива $\text{arr}$.
+\end{itemize}
+Выходными данными получается отсортированный массив $\text{arr}$.
+
+
+
+\section{Реализации алгоритмов}
+
+
+
+
+\begin{lstlisting}[caption=Алгоритм поразрядной сортировки]
+void radix_ui(register unsigned int vector[], register const unsigned int size) {
+
+    const int MAX_UINT__ = ((((1 << ((sizeof(unsigned int) << 3) - 2)) - 1) << 1) + 1);
+    const int LAST_EXP__ = (sizeof(unsigned int) - 1) << 3;
+    
+#define PRELIMINARY__ 100
+#define MISSING_BITS__ exp < (sizeof(unsigned int) << 3) && (max >> exp) > 0
+#define LOOP_MAX__(a, b)				\
+    for(s = &vector[a], k = &vector[b]; s < k; ++s) {	\
+	if(*s > max)  {					\
+	    max = *s;					\
+	}						\
+    }
+    
+    register unsigned int *b, *s, *k;
+    register unsigned int exp = 0;
+    register unsigned int max = exp;
+    \end{lstlisting}
+    \begin{lstlisting}[caption=Алгоритм поразрядной сортировки]
+    unsigned int i, *point[0x100];
+    int swap = 0;
+    
+    const unsigned int preliminary = (size > PRELIMINARY__) ? PRELIMINARY__ : (size >> 3);
+    
+
+    LOOP_MAX__(1, preliminary);
+    if(max <= (MAX_UINT__ >> 7)) {	
+	LOOP_MAX__(preliminary, size);
+    }
+    
+    b = (unsigned int *)malloc(sizeof(unsigned int) * size);
+    
+#define SORT_BYTE__(vec, bb, shift)					\
+    unsigned int bucket[0x100] = {0};					\
+    register unsigned char *n = (unsigned char *)(vec) + (exp >> 3),*m; \
+    for(m = (unsigned char *)(&vec[size & 0xFFFFFFFC]); n < m;) {	\
+	++bucket[*n]; n += sizeof(int);					\
+	++bucket[*n]; n += sizeof(int);					\
+	++bucket[*n]; n += sizeof(int);					\
+	++bucket[*n]; n += sizeof(int);					\
+    }									\
+    for(n = (unsigned char *)(&vec[size & 0xFFFFFFFC]) + (exp >> 3),	\
+	    m = (unsigned char *)(&vec[size]); n < m;) {		\
+	++bucket[*n]; n += sizeof(int);					\
+    }									\
+    s = bb;								\
+    int next = 0;							\
+    for(i = 0; i < 0x100; ++i) {					\
+	if(bucket[i] == size) {						\
+	    next = 1;							\
+	    break;							\
+	}								\
+    }									\
+    if(next) {								\
+	exp += 8;							\
+	continue;							\
+    }									\
+    for(i = 0; i < 0x100; s += bucket[i++]) {				\
+	point[i] = s;							\
+    }									\
+    for(s = vec, k = &vec[size]; s < k; ++s) {	\
+\end{lstlisting}
+\begin{lstlisting}[caption=Алгоритм поразрядной
+	*point[(*s shift) & 0xFF]++ = *s;				\
+    }									\
+    swap = 1 - swap;							\
+    exp += 8;
+    
+    /* Sort each byte (if needed) */
+    while(MISSING_BITS__) {
+	if(exp) {
+	    if(swap) {
+		SORT_BYTE__(b, vector, >> exp);
+	    } else {
+		SORT_BYTE__(vector, b, >> exp);
+	    }
+	} else {
+	    SORT_BYTE__(vector, b, );
+	}
+    }
+
+    if(swap) {
+	memcpy(vector, b, sizeof(unsigned int) * size);
+    }
+    
+    free(b);
+    
+#undef PRELIMINARY__
+#undef MISSING_BITS__
+#undef LOOP_MAX__
+#undef SORT_BYTE__
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Алгоритм пирамидальной сортировки]
+void max_heapify(int a[], int i, int n)
+{
+  int l,r,largest,loc;
+  l=2*i;
+  r=(2*i+1);
+  if((l<=n)&&a[l]>a[i])
+    largest=l;
+  else
+    largest=i;
+  if((r<=n)&&(a[r]>a[largest]))
+    largest=r;
+  if(largest!=i)
+    {
+    \end{lstlisting}
+\begin{lstlisting}[caption=Алгоритм пирамидальной сортировки]
+      loc=a[i];
+      a[i]=a[largest];
+      a[largest]=loc;
+      MAX_HEAPIFY(a, largest,n);
+    }
+}
+void BUILD_MAX_HEAP(int a[], int n)
+{
+  for(int k = n/2; k >= 1; k--)
+    {
+      max_heapify(a, k, n);
+    }
+}
+void heap_sort(int a[], int n)
+{
+
+  BUILD_MAX_HEAP(a,n);
+  int i, temp;
+  for (i = n; i >= 2; i--)
+    {
+      temp = a[i];
+      a[i] = a[1];
+      a[1] = temp;
+      max_heapify(a, 1, i - 1);
+    }
+}
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[caption=алгоритм пузырьковой сортировки]
+      void bubbleSort(vector <int> &v, int n) {
+	bool swapped = true;
+	int i = 0;
+
+	while (i < n - 1 && swapped) {
+		swapped = false;
+		
+		for (int j = n - 1; j > i; j--) { // unordered part
+			
+			if (v[j] < v[j - 1]) {
+				swap(v[j], v[j - 1]);
+				swapped = true;
+			}
+		}
+		i++;
+	}
+}
+\end{lstlisting}
+ 
+\section{Вывод}
+
+В данном разделе были разработаны исходный код всех трех алгоритмов: порразрядной сортировки, пирамидальной сортировки и сортировки пузырьком. 
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "rpz"
+%%% End:

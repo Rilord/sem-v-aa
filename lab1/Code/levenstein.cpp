@@ -5,9 +5,10 @@
 #include "levenstein.h"
 
 #include <stdio.h>
-#include <pprint.hpp>
 
 #include "matrix.h"
+
+#define BENCHMARK
 
 #define d(i,j) dd[(i) * (lt+2) + (j) ]
 #define min(x,y) ((x) < (y) ? (x) : (y))
@@ -16,7 +17,7 @@
 
 
 
-int edit_distance(char *s, uint32_t ls, char *t, uint32_t lt) {
+int edit_distance(const char *s, int ls, const char *t, int lt) {
     int a, b, c;
 
     if (!ls) return lt;
@@ -25,14 +26,14 @@ int edit_distance(char *s, uint32_t ls, char *t, uint32_t lt) {
     if (s[ls - 1] == t[lt - 1])
         return edit_distance(s, ls - 1, t, lt - 1);
 
-    a = edit_distance(s, ls - 1, t, lt - 1);
-    b = edit_distance(s, ls, t, lt - 1);
-    c = edit_distance(s, ls - 1, t, lt);
-
-    return a + 1;
+    return 1
+           + min3(edit_distance(s, ls ,t, lt - 1),
+                  edit_distance(s, ls ,t - 1, lt), // Remove
+                  edit_distance(s, ls - 1 ,t, lt - 1) // Replace
+           );
 }
 
-int memoized_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt, matrix *dp) {
+int memoized_edit_distance(const char *s, int ls, const char *t, int lt, matrix *dp) {
 
     if (!ls) return lt;
     if (!lt) return ls;
@@ -43,15 +44,15 @@ int memoized_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt, matrix *d
         return dp->mat[ls - 1][lt - 1] = memoized_edit_distance(s, ls - 1, t, lt - 1, dp);
 
     return dp->mat[ls - 1][lt - 1] = 1 + min3(memoized_edit_distance(s, ls - 1, t, lt - 1, dp),
-                                        memoized_edit_distance(s, ls, t, lt - 1, dp),
-                                        memoized_edit_distance(s, ls - 1, t, lt - 1, dp));
+                                              memoized_edit_distance(s, ls, t, lt - 1, dp),
+                                              memoized_edit_distance(s, ls - 1, t, lt - 1, dp));
 }
 
-result *iterative_levenshtein(char *s, int32_t ls, char *t, int32_t lt) {
-    uint32_t x, y;
+result *iterative_levenshtein(const char *s, int32_t ls, const char *t, int32_t lt) {
+    int x, y;
 
     matrix *mat;
-    result res;
+    result *res = (result *) malloc(sizeof(res));
     MATRIX(mat, lt + 1, ls + 1, int32_t);
 
     mat->mat[0][0] = 0;
@@ -68,12 +69,12 @@ result *iterative_levenshtein(char *s, int32_t ls, char *t, int32_t lt) {
                     mat->mat[x - 1][y - 1] + (s[y - 1] == t[x - 1] ? 0 : 1)
             );
 
-    res.mat = mat, res.distance = mat->mat[lt][ls];
+    res->mat = mat, res->distance = mat->mat[lt][ls];
 
-    return &res;
+    return res;
 }
 
-int damerau_levenstein(char *s, uint32_t ls, char *t, uint32_t lt) {
+int damerau_levenstein(const char *s, int ls, const char *t, int lt) {
     int32_t *dd;
     int32_t i, j, cost, i1, j1, DB;
     int32_t INF = ls + lt;
@@ -117,9 +118,9 @@ int damerau_levenstein(char *s, uint32_t ls, char *t, uint32_t lt) {
     return cost;
 }
 
-static int dist(uint32_t i, uint32_t j, matrix *d,
-        const char *s, const char *t,
-        uint32_t ls, uint32_t lt) {
+static int dist(int i, int j, matrix *d,
+                const char *s, const char *t,
+                int ls, int lt) {
 
     if (d->mat[i][j] >= 0) return d->mat[i][j];
 
@@ -138,11 +139,16 @@ static int dist(uint32_t i, uint32_t j, matrix *d,
         if ((y = dist(i + 1, j, d, s, t, ls, lt)) < x) x = y;
         x++;
     }
+
+#ifdef BENCHMARK
+    print_matrix(d);
+#endif
+
     return d->mat[i][j] = x;
 
 }
 
-int cached_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt) {
+int cached_edit_distance(const char *s, int ls, const char *t, int lt) {
 
     matrix *d;
 
@@ -153,6 +159,7 @@ int cached_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt) {
     for (int i = 0; i <= ls; i++)
         for (int j = 0; j <= lt; j++)
             d->mat[i][j] = -1;
+
 
     return dist(0,0, d, s, t, ls, lt);
 }

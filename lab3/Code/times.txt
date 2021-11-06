@@ -1,0 +1,12 @@
+11091.000000 ns, heap sort for 10 is 286.200000 and bubble sort for 10 is 164.000000
+2029.800000 ns, heap sort for 10 is 192.800000 and bubble sort for 10 is 163.400000
+3094.600000 ns, heap sort for 51 is 802.600000 and bubble sort for 51 is 2135.200000
+2632.600000 ns, heap sort for 51 is 657.000000 and bubble sort for 51 is 2384.000000
+3970.000000 ns, heap sort for 101 is 1126.600000 and bubble sort for 101 is 7654.400000
+3592.000000 ns, heap sort for 101 is 1056.200000 and bubble sort for 101 is 7406.800000
+18004.000000 ns, heap sort for 1001 is 8641.800000 and bubble sort for 1001 is 700791.800000
+18276.600000 ns, heap sort for 1001 is 8869.000000 and bubble sort for 1001 is 777547.600000
+174965.400000 ns, heap sort for 10001 is 86299.600000 and bubble sort for 10001 is 145235748.200000
+154625.400000 ns, heap sort for 10001 is 856639.200000 and bubble sort for 10001 is 76091911.400000
+1219600.800000 ns, heap sort for 100001 is 653278.600000 and bubble sort for 100001 is 6228532556.200000
+1874509.400000 ns, heap sort for 100001 is 738298.400000 and bubble sort for 100001 is 6125386392.400000

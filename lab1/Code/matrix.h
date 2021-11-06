@@ -6,7 +6,6 @@
 #define LAB1_MATRIX_H
 
 #include <cstdint>
-#include <pprint.hpp>
 
 typedef struct {
     int32_t **mat, m, n;
@@ -17,7 +16,6 @@ typedef struct {
 } array;
 
 
-std::ostream &operator<<(std::ostream &os, const matrix &mat);
 
 #define MATRIX(pointer, M, N, type) \
     pointer = (matrix *) malloc(sizeof(matrix));\
@@ -25,5 +23,8 @@ std::ostream &operator<<(std::ostream &os, const matrix &mat);
     pointer->mat = (type **) calloc(M, sizeof(type *));\
     for (int i = 0; i < M; i++)\
         pointer->mat[i] = (type *) calloc(N, sizeof(type))\
+
+
+void print_matrix(const matrix *mat);
 
 #endif //LAB1_MATRIX_H
