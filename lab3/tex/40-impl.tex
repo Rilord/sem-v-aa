@@ -1,6 +1,7 @@
 \chapter{Технологический раздел}
 \label{cha:impl}
 
+В данном разделе приведены требования к программному обеспечению, средства реализации и листинги кода. 
 
 \section{Средства реализации}
 Основным средством реализации в данной лабораторной работе является язык программирования C++17 \cite{iso_2017} ввиду своей высокой скорости работы и большого инструментария библиотек для анализирования программного обеспечения. Программное обеспечение было реализована при помощи структурного программирования.
@@ -17,9 +18,6 @@
 
 \section{Реализации алгоритмов}
 
-
-
-
 \begin{lstlisting}[caption=Алгоритм поразрядной сортировки]
 void radix_ui(register unsigned int vector[], register const unsigned int size) {
 
@@ -34,12 +32,12 @@ void radix_ui(register unsigned int vector[], register const unsigned int size) 
 	    max = *s;					\
 	}						\
     }
-    
+    \end{lstlisting}
+    \begin{lstlisting}[caption=Алгоритм поразрядной сортировки]
     register unsigned int *b, *s, *k;
     register unsigned int exp = 0;
     register unsigned int max = exp;
-    \end{lstlisting}
-    \begin{lstlisting}[caption=Алгоритм поразрядной сортировки]
+
     unsigned int i, *point[0x100];
     int swap = 0;
     
@@ -78,12 +76,13 @@ void radix_ui(register unsigned int vector[], register const unsigned int size) 
 	exp += 8;							\
 	continue;							\
     }									\
+    \end{lstlisting}
+\begin{lstlisting}[caption=Алгоритм поразрядной
     for(i = 0; i < 0x100; s += bucket[i++]) {				\
 	point[i] = s;							\
     }									\
     for(s = vec, k = &vec[size]; s < k; ++s) {	\
-\end{lstlisting}
-\begin{lstlisting}[caption=Алгоритм поразрядной
+
 	*point[(*s shift) & 0xFF]++ = *s;				\
     }									\
     swap = 1 - swap;							\
@@ -123,13 +122,14 @@ void max_heapify(int a[], int i, int n)
   if((l<=n)&&a[l]>a[i])
     largest=l;
   else
+      \end{lstlisting}
+\begin{lstlisting}[caption=Алгоритм пирамидальной сортировки]
     largest=i;
   if((r<=n)&&(a[r]>a[largest]))
     largest=r;
   if(largest!=i)
     {
-    \end{lstlisting}
-\begin{lstlisting}[caption=Алгоритм пирамидальной сортировки]
+
       loc=a[i];
       a[i]=a[largest];
       a[largest]=loc;
