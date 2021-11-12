@@ -1,153 +1,130 @@
 \chapter{Технологический раздел}
 \label{cha:impl}
 
+В данном разделе приведены требования к программному обеспечению, средства реализации и листинги кода. 
+
+\section{Требования к программному обеспечению}
+Входными данными являются матрица A и матрица B. Размерности матриц определена; количество столбцов матрицы B должно быть равно количеству строк матрицы B. Выходными данными является матрица --- результат умножения входныхматриц A и B.
 
 \section{Средства реализации}
-Основным средством реализации в данной лабораторной работе является язык программирования C++[2] ввиду своей высокой скорости работы и большого инструментария библиотек для анализирования программного обеспечения. Программное обеспечение было реализована при поомощи структурного программирования.
+
+Для реалмзации лабораторной работы был выбран язык C++, что обуславливается большим количеством готовых инструментов для тестирования и анализа программного обеспечения. 
+
+\section{Сведения о модулях программы}
+
+\begin{itemize}
+    \item main.cpp -- файл, содержащий точку входа программы; 
+    \item matrix.cpp -- файл, в котором описана структура матрицы, метода для работы с матрицами и имплементации алгоритмов умножения матриц;
+    
+\end{itemize}
 
 \section{Реализации алгоритмов}
 
-\begin{lstlisting}[caption=итеративный Алгоритм Левенштейна]
-int edit_distance(char *s, uint32_t ls, char *t, uint32_t lt) {
-    int a, b, c;
-
-    if (!ls) return lt;
-    if (!lt) return ls;
-
-    if (s[ls - 1] == t[lt - 1])
-        return edit_distance(s, ls - 1, t, lt - 1);
-
-    a = edit_distance(s, ls - 1, t, lt - 1);
-    b = edit_distance(s, ls, t, lt - 1);
-    c = edit_distance(s, ls - 1, t, lt);
-
-    return a + 1;
-}
-
-\end{lstlisting}
-
-
-\begin{lstlisting}[caption=Алгоритм Левенштейна с мемоизацией]
-int memoized_edit_distance(char *s, uint32_t ls, char *t, uint32_t lt, int32_t **dp) {
-
-    if (!ls) return lt;
-    if (!lt) return ls;
-
-    if (dp[ls - 1][lt - 1] != -1) return dp[ls - 1][lt - 1];
-
-    if (s[ls - 1] == t[lt - 1])
-        return dp[ls - 1][lt - 1] = memoized_edit_distance(s, ls - 1, t, lt - 1, dp);
-\end{lstlisting}
-\begin{lstlisting}[caption=Алгоритм Левенштейна с мемоизацией]
-
-    return dp[ls - 1][lt - 1] = 1 + min3(memoized_edit_distance(s, ls - 1, t, lt - 1, dp),
-                                        memoized_edit_distance(s, ls, t, lt - 1, dp),
-                                        memoized_edit_distance(s, ls - 1, t, lt - 1, dp));
-}
-\end{lstlisting}
-
-\begin{lstlisting}[caption=Матрично]
-int iterative_levenshtein(char *s, uint32_t ls, char *t, uint32_t lt) {
-    uint32_t x, y;
-    uint32_t mat[lt + 1][ls + 1];
-
-    mat[0][0] = 0;
-
-    for (x = 1; x <= lt; x++)
-        mat[x][0] = mat[x - 1][0] + 1;
-    for (y = 1; y <= ls; y++)
-        mat[0][y] = mat[0][y - 1] + 1;
-    for (x = 1; x <= lt; x++)
-        for (y = 1; y <= ls; y++)
-            mat[x][y] = min3(
-                    mat[x - 1][y] + 1,
-                    mat[x][y - 1] + 1,
-                    mat[x - 1][y - 1] + (s[y - 1] == t[x - 1] ? 0 : 1)
-            );
-
-    return (mat[lt][ls]);
-}
-
-}
-
-\end{lstlisting}
-
-\begin{lstlisting}[caption=Функция нахождения расстояния Дамерау--Левенштейна]
-int damerau_levenstein(char *s, uint32_t ls, char *t, uint32_t lt) {
-    int32_t *dd;
-    int32_t i, j, cost, i1, j1, DB;
-    int32_t INF = ls + lt;
-    int32_t DA[256 * sizeof(int32_t)];
-    memset(DA, 0, sizeof(DA));
-    if (!(dd = (int32_t *) malloc((ls + 2) * (lt + 2) * sizeof(int32_t)))) {
-\end{lstlisting}
-\begin{lstlisting}[caption=Функция нахождения расстояния Дамерау--Левенштейна]
-        return -1;
-    }
-
-    d(0,0) = INF;
-
-    for (i = 0; i < ls + 1; i++) {
-        d(i + 1, 1) = i;
-        d(i + 1, 0) = INF;
-    }
-
-    for (j = 0; j < lt + 1; j++) {
-        d(1, j + 1) = j;
-        d(0, j + 1) = INF;
-    }
-
-    for(i = 1; i < ls + 1; i++) {
-        DB = 0;
-        for(j = 1; j < lt + 1; j++) {
-            i1 = DA[t[j - 1]];
-            j1 = DB;
-            cost = ((s[i - 1] == t[j - 1])? 0 : 1);
-            if(cost == 0) DB = j;
-            d(i + 1,j + 1) =
-                    min4(d(i,j)+cost,
-                         d(i + 1,j) + 1,
-                         d(i,j + 1) + 1,
-                         d(i1, j1) + (i - i1 - 1) + 1 + (j - j1 - 1));
+На листингах \ref{lst:simple} --- \ref{lst:winograd_improved}
+\begin{lstlisting}[caption=Реализация простого алгоритма умножения матриц, label=lst:simple]
+void multiply_matrices(const matrix *A, const matrix *B, const matrix *C, const int N) {
+    for (int i = 0; i < A->m; i++) {
+        for (int j = 0; j < B->n; j++) {
+            for (int p = 0; p < A->n; p++)
+                C->mat[i][j] += A->mat[i][p] * B->mat[p][j];
         }
-        DA[s[i-1]] = i;
     }
-    cost = d(ls+1,lt+1);
-    free(dd);
-    return cost;
+
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[caption=Реализация алгроитма умножения матриц Винограда, label=winograd]
+int *precompute_rows(const matrix *A) {
+    auto res = CREATE_ARRAY(A->m, int);
+
+    for (int i = 0; i < A->m; i++)
+        for (int j = 0; j < A->n / 2; j++)
+            res[i] = res[i] + A->mat[i][j * 2] * A->mat[i][j * 2 + 1];
+
+    return res;
 }
+
+int *precompute_cols(const matrix *A) {
+    auto res = CREATE_ARRAY(A->n, int);
+
+    for (int i = 0; i < A->n; i++)
+        for (int j = 0; j < A->m / 2; j++)
+            res[i] = res[i] + A->mat[j * 2][i] * A->mat[j * 2 + 1][i];
+
+
+    return res;
+}
+
+void winograd(const matrix *A, const matrix *B, const matrix *C) {
+    int m = A->m, n = B->n, q = B->m;
+
+    auto pre_A = precompute_rows(A), pre_B = precompute_cols(B);
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            C->mat[i][j] = -(pre_A[i] + pre_B[j]);
+            for (int k = 0; k < q / 2; k++) {
+                C->mat[i][j] =
+                        C->mat[i][j] +
+                        (A->mat[i][k * 2] + B->mat[k * 2 + 1][j]) *
+                        (A->mat[i][k * 2 + 1] + B->mat[k * 2][j]);
+            }
+        }
+    }
+    if (q % 2 != 0) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                C->mat[i][j] = C->mat[i][j] = C->mat[i][j] +
+                        A->mat[i][q - 1] * B->mat[q - 1][j];
+            }
 \end{lstlisting}
 
-\section{Тестирование}
-В таблице \ref {tab:tabular} приведены тестовые данные
+\begin{lstlisting}[caption=Реализация улучшенного алгоритма Копперсмита--Виноград, label=lst:winograd_improved]
+int *precompute_rows(const matrix *A) {
+    auto res = CREATE_ARRAY(A->m, int);
 
-\begin{table}[ht]
-  \caption{Пример короткой таблицы с коротким названием}
-  \begin{tabular}{|r|c|c|c|l|}
-  \hline
-  №      & Первое слово & Второе слово  & Ожидаемый результат &  Результат \\
-  \hline
-  1  &     &     & 0 & 0            \\
-    \hline
-  2  & abc   & def    & 3 & 3         \\
-    \hline
-  3  & pool   & loop    & 2 & 2         \\
-    \hline
-  4  & abbaccb  & ababccb   & 2  & 2         \\
-    \hline
-  5  &   & aba   & 3  & 3         \\
-  \hline
-    6  &  gentrification &    & 14  & 14         \\
-      \hline
-    7  &  joking &  joggling  & 5  & 5         \\
-  \hline
-  \end{tabular}
-  \label{tab:tabular}
-\end{table}
+    for (int i = 0; i < A->m; i++)
+        for (int j = 0; j < A->n / 2; j++)
+            res[i] = res[i] + A->mat[i][j * 2] * A->mat[i][j * 2 + 1];
+
+    return res;
+}
+
+int *precompute_cols(const matrix *A) {
+    auto res = CREATE_ARRAY(A->n, int);
+
+    for (int i = 0; i < A->n; i++)
+        for (int j = 0; j < A->m / 2; j++)
+            res[i] = res[i] + A->mat[j * 2][i] * A->mat[j * 2 + 1][i];
+
+
+    return res;
+}
+
+
+void improved_winograd(const matrix *A, const matrix *B, const matrix *C) {
+    int m = A->m, n = B->n, q = B->m;
+
+    auto pre_A = precompute_rows_improved(A),
+         pre_B = precompute_cols_improved(B);
+
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) {
+            auto temp = (-pre_A[i] + pre_B[j]);
+            for (int k = 0; k < q; k += 2) {
+                temp += (A->mat[i][k - 1] + B->mat[k][j]) *
+                        (A->mat[i][k] + B->mat[k - 1][j]);
+            }
+            C->mat[i][j] = temp;
+        }
+
+    if (q & 1 != 0) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                C->mat[i][j] += A->mat[i][q - 1] * B->mat[q - 1][j];
+\end{lstlisting}
 
 \section{Вывод}
-
-В данном разделе были разработаны исходный код всех четырех алгоритмов: вычисления расстояния Левенштейна рекрсивно, с заполнением матрицы, рекурсивно м заполнением матрицы, Дамерау -- Левенштейна с заполнением матрицы. 
+В данном разделе были приведены реализации ранее сконструированных алоритмов умножения матриц.
 
 %%% Local Variables:
 %%% mode: latex
