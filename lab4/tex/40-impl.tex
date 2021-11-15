@@ -1,0 +1,163 @@
+\chapter{Технологический раздел}
+\label{cha:impl}
+
+В данном разделе приведены требования к программному обеспечению, средства реализации и листинги кода. 
+
+\section{Средства реализации}
+Языком реализации данного проекта является C++ стандарта 2017 года. Для графики использовалась библиотека Vulkan API, а библиотека GLM для математических вычислений. 
+
+\section{Требования к программному обеспечению}
+Входнымы данными являются:
+\begin{itemize}
+    \item количество потоков, на которых будет работать программа, количество моделей и сама модель;
+\end{itemize}
+
+\section{Реализации алгоритмов}
+
+\begin{lstlisting}[caption=Обычный рендеринг]
+	VkCommandBufferBeginInfo cmdBufInfo = commandBufferBeginInfo();
+
+		for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
+		{
+			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
+
+			VkRenderingAttachmentInfoKHR colorAttachment{};
+			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+			colorAttachment.imageView = swapChain.buffers[i].view;
+			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
+			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			colorAttachment.clearValue.color = { 0.0f,0.0f,0.0f,0.0f };
+
+			VkRenderingAttachmentInfoKHR depthStencilAttachment{};
+			depthStencilAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+			\end{lstlisting}
+\begin{lstlisting}[caption=Обычный рендеринг]
+			depthStencilAttachment.imageView = depthStencil.view;
+			depthStencilAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR;
+			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+			depthStencilAttachment.clearValue.depthStencil = { 1.0f,  0 };
+
+			VkRenderingInfoKHR renderingInfo{};
+			renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+			renderingInfo.renderArea = { 0, 0, width, height };
+			renderingInfo.layerCount = 1;
+			renderingInfo.colorAttachmentCount = 1;
+			renderingInfo.pColorAttachments = &colorAttachment;
+			renderingInfo.pDepthAttachment = &depthStencilAttachment;
+			renderingInfo.pStencilAttachment = &depthStencilAttachment;
+
+			vkCmdBeginRenderingKHR(drawCmdBuffers[i], &renderingInfo);
+
+			VkViewport viewport = make_viewport((float)width, (float)height, 0.0f, 1.0f);
+			vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
+
+			VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+			vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
+
+			vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+			vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			model.draw(drawCmdBuffers[i], pipelineLayout);
+
+			vkCmdEndRenderingKHR(drawCmdBuffers[i]);
+
+			VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
+		}
+	}
+
+	void draw()
+	{
+	\end{lstlisting}
+\begin{lstlisting}[caption=Обычный рендеринг]
+		App::prepareFrame();
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer];
+		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
+		VulkanExampleBase::submitFrame();
+\end{lstlisting}
+
+
+
+
+
+\begin{lstlisting}[caption=Многопоточный рендеринг]
+void threadRender(uint32_t threadIndex, uint32_t cmdBufferIndex, VkCommandBufferInheritanceInfo inheritanceInfo)
+{
+	ThreadData *thread = &threadData[threadIndex];
+	ObjectData *objectData = &thread->objectData[cmdBufferIndex];
+
+
+	objectData->visible = frustum.checkSphere(objectData->pos, models.ufo.dimensions.radius * 0.5f);
+
+	if (!objectData->visible)
+	{
+		return;
+	}
+
+	VkCommandBufferBeginInfo cmdBufferBeginInfo = commandBufferBeginInfo();
+	commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+	cmdBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+
+	VkCommandBuffer cmdBuffer = thread->commandBuffer[cmdBufferIndex];
+
+	VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
+
+	VkViewport viewport = make_viewport((float)width, (float)height, 0.0f, 1.0f);
+	vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+
+	VkRect2D bound = rect2D(width, height, 0, 0);
+	vkCmdSetScissor(cmdBuffer, 0, 1, &bound);
+
+	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.phong);
+		\end{lstlisting}
+\begin{lstlisting}[caption=Параллельный рендеринг]
+
+	if (!paused) {
+		objectData->rotation.y += 2.5f * objectData->rotationSpeed * frameTimer;
+		if (objectData->rotation.y > 360.0f) {
+			objectData->rotation.y -= 360.0f;
+		}
+		objectData->deltaT += 0.15f * frameTimer;
+		if (objectData->deltaT > 1.0f)
+			objectData->deltaT -= 1.0f;
+		objectData->pos.y = sin(glm::radians(objectData->deltaT * 360.0f)) * 2.5f;
+	}
+
+	objectData->model = glm::translate(glm::mat4(1.0f), objectData->pos);
+	objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));
+	objectData->model = glm::rotate(objectData->model, glm::radians(objectData->rotation.y), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
+	objectData->model = glm::rotate(objectData->model, glm::radians(objectData->deltaT * 360.0f), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
+	objectData->model = glm::scale(objectData->model, glm::vec3(objectData->scale));
+
+	thread->pushConstBlock[cmdBufferIndex].mvp = matrices.projection * matrices.view * objectData->model;
+
+	vkCmdPushConstants(
+		cmdBuffer,
+		pipelineLayout,
+		VK_SHADER_STAGE_VERTEX_BIT,
+		0,
+		sizeof(ThreadPushConstantBlock),
+		&thread->pushConstBlock[cmdBufferIndex]);
+
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &models.cube.vertices.buffer, offsets);
+	vkCmdBindIndexBuffer(cmdBuffer, models.cube.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+\end{lstlisting}
+\begin{lstlisting}[caption=Параллельный рендеринг]
+	vkCmdDrawIndexed(cmdBuffer, models.cube.indices.count, 1, 0, 0, 0);
+
+	VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
+}
+\end{lstlisting}
+ 
+\section{Вывод}
+
+В данном разделе были разработаны исходный код двух алгоритмо
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "rpz"
+%%% End:
